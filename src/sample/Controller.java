@@ -10,13 +10,16 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.input.*;
-import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import model.*;
 import java.io.*;
 
 public class Controller {
+
+    // root stage
+    Stage primaryStage;
 
     // gui
     @FXML
@@ -41,10 +44,6 @@ public class Controller {
 
     @FXML
     public void initialize(){
-
-        /*GraphicsContext gr = canvasPane.getGraphicsContext2D();
-        gr.setFill(Color.GREEN);*/
-
         initSystem();
     }
 
@@ -57,6 +56,7 @@ public class Controller {
     }
 
     private void initVariables(){
+        primaryStage = null;
         width = 0;
         height = 0;
         graph = null;
@@ -84,7 +84,7 @@ public class Controller {
                 FileChooser chooser = new FileChooser();
                 chooser.setInitialDirectory(new File("C:\\"));
                 chooser.setTitle("Load Graph");
-                File f = chooser.showOpenDialog(null); // primaryStage
+                File f = chooser.showOpenDialog(primaryStage);
                 if (f != null) {
                     try {
                         BufferedReader file = new BufferedReader(
@@ -109,7 +109,7 @@ public class Controller {
                 FileChooser chooser = new FileChooser();
                 chooser.setInitialDirectory(new File("C:\\"));
                 chooser.setTitle("Save Graph");
-                File f = chooser.showSaveDialog(null); // primaryStage
+                File f = chooser.showSaveDialog(primaryStage);
                 if (f != null) {
                     try {
                         PrintWriter file = new PrintWriter(
@@ -256,10 +256,13 @@ public class Controller {
                         elasticEndLocation.getY());
     }
 
+    // не нужжные два метода
     public Graph getGraph() { return graph; }
 
     public void setGraph(Graph g) { graph = g; update(); }
+    //
 
+    public void setParentStage(Stage st){primaryStage = st;}
 }
 
 // TODO: несколько контекстных меню:

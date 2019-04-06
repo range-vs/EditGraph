@@ -16,8 +16,8 @@ public class Main extends Application {
         primaryStage.setTitle("Graph Editor");
         primaryStage.setScene(new Scene(p, 700, 520));
         // get controller
-        /*controller = fxmlLoader.getController();
-        controller.setParentStage(primaryStage);*/
+        Controller controller = fxmlLoader.getController();
+        controller.setParentStage(primaryStage);
         primaryStage.show();
     }
 
