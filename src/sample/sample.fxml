@@ -5,25 +5,38 @@
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
-    <top>
-        <MenuBar BorderPane.alignment="TOP_CENTER">
-         <menus>
-            <Menu mnemonicParsing="false" text="File">
-              <items>
-                  <MenuItem fx:id="loadMenu" mnemonicParsing="false" text="Load" />
-                  <MenuItem fx:id="saveMenu" mnemonicParsing="false" text="Save" />
-              </items>
-            </Menu>
-         </menus></MenuBar>
-    </top>
-   <center>
-      <ScrollPane fx:id="rootPane" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/8.0.172-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+      <RowConstraints maxHeight="20.0" minHeight="20.0" prefHeight="20.0" vgrow="SOMETIMES" />
+    <RowConstraints maxHeight="1.7976931348623157E308" minHeight="10.0" prefHeight="369.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+       <MenuBar GridPane.rowIndex="0">
+           <menus>
+               <Menu mnemonicParsing="false" text="File">
+                   <items>
+                       <MenuItem fx:id="loadMenu" mnemonicParsing="false" text="Load" />
+                       <MenuItem fx:id="saveMenu" mnemonicParsing="false" text="Save" />
+                   </items>
+               </Menu>
+         </menus>
+       </MenuBar>
+      <ScrollPane fx:id="rootPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="0.0" minWidth="0.0" prefHeight="499.0" prefWidth="600.0" GridPane.rowIndex="1">
          <content>
-                  <Canvas fx:id="canvasPane" height="200.0" width="200.0" />
+            <VBox minHeight="0.0" minWidth="0.0">
+               <children>
+                  <Canvas fx:id="canvasPane" />
+               </children>
+            </VBox>
          </content>
       </ScrollPane>
-   </center>
-</BorderPane>
+   </children>
+</GridPane>

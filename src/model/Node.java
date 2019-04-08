@@ -4,6 +4,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,8 +13,10 @@ import java.util.ArrayList;
 
 public class Node {
     private String label;
+    private String labelIn;
     private Point2D location;
     private Color colorNode;
+    public static Color colorDefault = Color.color(0.6, 0.6, 1.0);
     public static int RADIUS = 15;
     private ArrayList<Edge> incidentEdges= new ArrayList<Edge>();
 
@@ -29,7 +32,13 @@ public class Node {
     public Node(String aLabel, Point2D aPoint) {
         label = aLabel;
         location = aPoint;
-        colorNode = Color.color(0.6, 0.6, 1.0); // color default
+        colorNode = colorDefault;
+    }
+    public Node(String aLabel,String inLabel, Point2D aPoint) {
+        label = aLabel;
+        labelIn = inLabel;
+        location = aPoint;
+        colorNode = colorDefault;
     }
     public String getLabel() { return label; }
     public Point2D getLocation() { return location; }
@@ -47,6 +56,8 @@ public class Node {
     public void addIncidentEdge(Edge e) {
         incidentEdges.add(e);
     }
+
+
     //incidentEdges = new ArrayList<model.Edge>();
 
     public ArrayList<Node> neighbours() {
@@ -67,9 +78,12 @@ public class Node {
         aPen.setStroke(Color.BLACK);
         aPen.strokeOval(location.getX() - RADIUS, location.getY() - RADIUS,
                 RADIUS*2, RADIUS*2);
-        // Draw a label at the top right corner of the node
-        aPen.setFont(Font.font("Arial", 14));
+        // Draw a label at the top right corner of the node and in node
         aPen.setFill(Color.BLACK);
+        int _x = (int)location.getX() - 5;
+        int _y = (int)location.getY() + 5;
+        aPen.fillText(labelIn, _x, _y);
+        aPen.setFont(Font.font("Arial", 14));
         aPen.fillText(label, location.getX() + RADIUS, location.getY() - RADIUS);
     }
 
@@ -94,5 +108,13 @@ public class Node {
 
     public void setColorNode(Color colorNode) {
         this.colorNode = colorNode;
+    }
+
+    public String getLabelIn() {
+        return labelIn;
+    }
+
+    public void setLabelIn(String labelIn) {
+        this.labelIn = labelIn;
     }
 }

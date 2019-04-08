@@ -3,23 +3,33 @@ package sample;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.geometry.Point2D;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.control.Alert;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.ScrollPane;
+import javafx.scene.control.*;
 import javafx.scene.input.*;
 import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import model.*;
+import sample.dialogs.DialogColorChooser;
+import sample.dialogs.DialogWriteController;
+
 import java.io.*;
+import java.util.ArrayList;
 
 public class Controller {
 
-    // root stage
-    Stage primaryStage;
+    // stages
+    private Stage primaryStage;
+    private Stage textStage;
+    private Stage colorChooserStage;
+    private DialogWriteController textStageController;
+    private DialogColorChooser colorChooserController;
 
     // gui
     @FXML
@@ -40,7 +50,9 @@ public class Controller {
     private Edge dragEdge;
     private Point2D dragPoint;
     private GraphicsContext aPen;
-    private Node currentSelectionNode; // currentSelectionNode selection node
+    private ContextMenu menuEdge;
+    private ContextMenu menuNode;
+    private ContextMenu menuGeneral;
 
     @FXML
     public void initialize(){
@@ -49,14 +61,20 @@ public class Controller {
 
     private void initSystem(){
         initVariables();
+        loadModalWindow();
         createMainMenu();
+        createContextMenu();
         createEvents();
-        canvasPane.requestFocus();
-        createDefaultGraph();
+        createClearGraph();
+        //createDefaultGraph();
     }
 
     private void initVariables(){
         primaryStage = null;
+        textStage = null;
+        colorChooserStage = null;
+        textStageController = null;
+        colorChooserController = null;
         width = 0;
         height = 0;
         graph = null;
@@ -65,13 +83,53 @@ public class Controller {
         dragEdge = null;
         dragPoint = null;
         aPen = null;
-        currentSelectionNode = null;
+        menuEdge = null;
+        menuNode = null;
+    }
+
+    private void loadModalWindow(){
+        String [] path = new String[]{"dialogs/dialog-write.fxml", "dialogs/dialog-color-chooser.fxml"};
+        String[] title = new String[]{"Редактирование атрибута", "Выбор цвета"};
+        for(int i = 0; i < 2;i++) {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource(path[i]));
+            Parent root1 = null;
+            try {
+                root1 = (Parent) fxmlLoader.load();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            Stage st = new Stage();
+            st.setResizable(false);
+            st.setTitle(title[i]);
+            st.setScene(new Scene(root1, Color.TRANSPARENT));
+            st.initOwner(primaryStage);
+            st.initModality(Modality.APPLICATION_MODAL);
+            if(i == 0){
+                textStage = st;
+                textStageController = fxmlLoader.getController();
+                textStageController.setPrimaryStage(textStage);
+            }else{
+                colorChooserStage = st;
+                colorChooserController = fxmlLoader.getController();
+                colorChooserController.setDefaultColor(Node.colorDefault);
+                colorChooserController.setPrimaryStage(colorChooserStage);
+            }
+        }
+
     }
 
     private void createDefaultGraph(){
+        canvasPane.requestFocus();
         graph = Graph.example();
         aPen = canvasPane.getGraphicsContext2D();
-        graph.draw(aPen);
+        update();
+    }
+
+    private void createClearGraph() {
+        canvasPane.requestFocus();
+        graph = new Graph();
+        aPen = canvasPane.getGraphicsContext2D();
+        update();
     }
 
     private void createMainMenu(){
@@ -129,6 +187,80 @@ public class Controller {
         });
     }
 
+    private void createContextMenu(){
+        menuGeneral = new ContextMenu();
+
+        menuEdge = new ContextMenu();
+        MenuItem renameEdgeLine = new MenuItem("Изменить ребро");
+        renameEdgeLine.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                textStageController.setHeader("Введите новое значение ребра:");
+                textStageController.setTextOut("");
+                textStage.showAndWait();
+                if(textStageController.isStatus()) {
+                    graph.selectedEdges().get(0).setLabel(textStageController.getTextOut());
+                    update();
+                }
+            }
+        });
+        menuEdge.getItems().addAll(renameEdgeLine);
+        menuNode = new ContextMenu();
+        MenuItem renameNodeIn = new MenuItem("Изменить вершину");
+        renameNodeIn.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                textStageController.setHeader("Введите новое значение вершины:");
+                textStageController.setTextOut("");
+                textStage.showAndWait();
+                if(textStageController.isStatus()) {
+                    graph.selectedNodes().get(0).setLabelIn(textStageController.getTextOut());
+                    update();
+                }
+            }
+        });
+        MenuItem renameNodeUp = new MenuItem("Изменить фактор");
+        renameNodeUp.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                textStageController.setHeader("Введите новое значение фактора:");
+                textStageController.setTextOut("");
+                textStage.showAndWait();
+                if(textStageController.isStatus()) {
+                    graph.selectedNodes().get(0).setLabel(textStageController.getTextOut());
+                    update();
+                }
+            }
+        });
+        MenuItem editColor = new MenuItem("Изменить цвет вершины");
+        editColor.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                colorChooserStage.showAndWait();
+                if(colorChooserController.isStatus()) {
+                    graph.selectedNodes().get(0).setColorNode(colorChooserController.getDefaultColor());
+                    update();
+                }
+            }
+        });
+        menuNode.getItems().addAll(renameNodeIn, renameNodeUp, editColor);
+
+        ArrayList<MenuItem> deleter = new ArrayList<>();
+        for(int i = 0;i<3;i++) {
+            MenuItem delMenu = new MenuItem("Удалить");
+            delMenu.setOnAction(new EventHandler<ActionEvent>() {
+                @Override
+                public void handle(ActionEvent event) {
+                    deleteElements();
+                }
+            });
+            deleter.add(delMenu);
+        }
+        menuEdge.getItems().add(deleter.get(0));
+        menuNode.getItems().add(deleter.get(1));
+        menuGeneral.getItems().add(deleter.get(2));
+    }
+
     private void createEvents(){
         rootPane.widthProperty().addListener((obs, oldVal, newVal) -> {
             if(width <= rootPane.getWidth()){
@@ -151,9 +283,18 @@ public class Controller {
         canvasPane.setOnMousePressed(new EventHandler<MouseEvent>() {
             public void handle(MouseEvent ev) {
                 dragPoint = new Point2D(ev.getX(), ev.getY());
-                currentSelectionNode = graph.nodeAt(ev.getX(), ev.getY());
-                if(ev.getButton() == MouseButton.SECONDARY && currentSelectionNode != null){
-                    //mainContextMenu.show(canvas, ev.getScreenX(), ev.getScreenY());
+                Node currentSelectionNode = graph.nodeAt(ev.getX(), ev.getY());
+                if(ev.isSecondaryButtonDown()){ // нажали ПКМ
+                    if(graph.selectedEdges().size() == 1 && graph.selectedNodes().size() == 1) {
+                        menuGeneral.show(canvasPane, ev.getScreenX(), ev.getScreenY());
+                    }
+                    else if (graph.selectedEdges().size() == 1) { // проверяем, что выделено одно ребро
+                        menuEdge.show(canvasPane, ev.getScreenX(), ev.getScreenY());
+                    } else if (graph.selectedNodes().size() == 1) { // проверяем, что выделен один узел
+                        menuNode.show(canvasPane, ev.getScreenX(), ev.getScreenY());
+                    } else {
+                        menuGeneral.show(canvasPane, ev.getScreenX(), ev.getScreenY());
+                    }
                     return;
                 }
                 else if (ev.getClickCount() == 2) {
@@ -177,7 +318,9 @@ public class Controller {
                         dragEdge = graph.edgeAt(ev.getX(), ev.getY());
                     dragPoint = new Point2D(ev.getX(), ev.getY());
                 }
-                //mainContextMenu.hide();
+                menuEdge.hide();
+                menuNode.hide();
+                menuGeneral.hide();
             }
 
         });
@@ -186,9 +329,10 @@ public class Controller {
             public void handle(MouseEvent ev) {
                 Node aNode = graph.nodeAt(ev.getX(), ev.getY());
                 // Check to see if we have let go on a node
-                if ((dragNode != null) && (aNode != null) && (aNode != dragNode))
+                if ((dragNode != null) && (aNode != null) && (aNode != dragNode)) {
                     // Change the model, by adding a new Edge
                     graph.addEdge(dragNode, aNode);
+                }
                 // Update the view, by redrawing the Graph
                 dragNode = null; // No need to remember this anymore
                 update();
@@ -220,6 +364,18 @@ public class Controller {
                                         ev.getX() - dragPoint.getX(),
                                 dragEdge.getEndNode().getLocation().getY() +
                                         ev.getY() - dragPoint.getY());
+                        dragEdge.setCenterArrow(new Point2D(dragEdge.getCenterArrow().getX() +
+                                ev.getX() - dragPoint.getX(),
+                                dragEdge.getCenterArrow().getY() +
+                                        ev.getY() - dragPoint.getY()));
+                        dragEdge.setLeftArrow(new Point2D(dragEdge.getLeftArrow().getX() +
+                                ev.getX() - dragPoint.getX(),
+                                dragEdge.getLeftArrow().getY() +
+                                        ev.getY() - dragPoint.getY()));
+                        dragEdge.setRightArrow(new Point2D(dragEdge.getRightArrow().getX() +
+                                ev.getX() - dragPoint.getX(),
+                                dragEdge.getRightArrow().getY() +
+                                        ev.getY() - dragPoint.getY()));
                         dragPoint = new Point2D(ev.getX(), ev.getY());
                     }
                 }
@@ -227,20 +383,24 @@ public class Controller {
             }
         });
 
-        canvasPane.setOnKeyReleased(new EventHandler<KeyEvent>() {
+        rootPane.setOnKeyReleased(new EventHandler<KeyEvent>() {
             public void handle(KeyEvent ev) {
                 if (ev.getCode() == KeyCode.DELETE) {
-                    // Delete all selected Edges
-                    for (Edge e: graph.selectedEdges())
-                        graph.deleteEdge(e);
-                    // Delete all selected Nodes
-                    for (Node n: graph.selectedNodes())
-                        graph.deleteNode(n);
-                    // Update the view, by redrawing the Graph
-                    update();
+                    deleteElements();
                 }
             }
         });
+    }
+
+    private void deleteElements() {
+        // Delete all selected Edges
+        for (Edge e : graph.selectedEdges())
+            graph.deleteEdge(e);
+        // Delete all selected Nodes
+        for (Node n : graph.selectedNodes())
+            graph.deleteNode(n);
+        // Update the view, by redrawing the Graph
+        update();
     }
 
     private void update() {
@@ -248,30 +408,21 @@ public class Controller {
         aPen.fillRect(0, 0, width, height);
         graph.draw(aPen);
         // Draw the elastic band
-        if (dragNode != null)
-            if (!dragNode.isSelected())
-                aPen.strokeLine(dragNode.getLocation().getX(),
+        if (dragNode != null) {
+            if (!dragNode.isSelected()) {
+                /*aPen.strokeLine(dragNode.getLocation().getX(),
                         dragNode.getLocation().getY(),
                         elasticEndLocation.getX(),
-                        elasticEndLocation.getY());
+                        elasticEndLocation.getY());*/
+                Edge tmpEdge = new Edge(new Node(dragNode.getLocation().getX(),
+                        dragNode.getLocation().getY()), new Node(elasticEndLocation.getX(),
+                        elasticEndLocation.getY()), true);
+                tmpEdge.draw(aPen);
+            }
+        }
     }
-
-    // не нужжные два метода
-    public Graph getGraph() { return graph; }
-
-    public void setGraph(Graph g) { graph = g; update(); }
-    //
 
     public void setParentStage(Stage st){primaryStage = st;}
 }
 
-// TODO: несколько контекстных меню:
-// 1 - щелчок по ребру:
-// изменить надпись(вызов диалог. окна)
-// 2 - щелчок по узлу:
-// изменить надпись внутри(вызов диалог. окна), изменить надпись рядом(вызов диалог. окна), изменить цвет узла
-// условие: если выбрано несколько элементов - то не показываем контекстное меню(нет смысла)
-
-// TODO: исключить дублирование линий (возможно)
 // TODO: автоизменение размеров - можно смотреть по крайним нодам(возможно сделаю)
-
