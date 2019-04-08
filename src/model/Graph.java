@@ -9,23 +9,23 @@ import java.io.PrintWriter;
 import java.util.*;
 
 public class Graph {
+
+    //vars
     private String label;
     private ArrayList<Node> nodes;
-    public Graph() { this("", new ArrayList<Node>()); }
-    public Graph(String aLabel) { this(aLabel, new ArrayList<Node>()); }
-    public Graph(String aLabel, ArrayList<Node> initialNodes) {
-        label = aLabel;
-        nodes = initialNodes;
-    }
+
+    // get/set/toggle
     public ArrayList<Node> getNodes() { return nodes; }
+
     public String getLabel() { return label; }
+
     public void setLabel(String newLabel) { label = newLabel; }
+
     // Graphs look like this: label(6 nodes, 15 edges)
     public String toString() {
         return(label + "(" + nodes.size() + " nodes, " +
                 getEdges().size() + " edges)");
     }
-
 
     public ArrayList<Edge> getEdges() {
         ArrayList<Edge> edges = new ArrayList<Edge>();
@@ -37,9 +37,22 @@ public class Graph {
         }
         return edges;
     }
+
+    // constr
+    public Graph() { this("", new ArrayList<Node>()); }
+
+    public Graph(String aLabel) { this(aLabel, new ArrayList<Node>()); }
+
+    public Graph(String aLabel, ArrayList<Node> initialNodes) {
+        label = aLabel;
+        nodes = initialNodes;
+    }
+
+    // methods
     public void addNode(Node aNode) {
         nodes.add(aNode);
     }
+
     public void addEdge(String name, Node start, Node end) {
         // First make the edge
         Edge anEdge = new Edge(name, start, end);
@@ -74,12 +87,13 @@ public class Graph {
     }
 
     public void deleteEdge(Edge anEdge) {
-// Just ask the nodes to remove it
+    // Just ask the nodes to remove it
         anEdge.getStartNode().incidentEdges().remove(anEdge);
         anEdge.getEndNode().incidentEdges().remove(anEdge);
     }
+
     public void deleteNode(Node aNode) {
-// Remove the opposite node's incident edges
+    // Remove the opposite node's incident edges
         for (Edge e: aNode.incidentEdges())
             e.otherEndFrom(aNode).incidentEdges().remove(e);
         nodes.remove(aNode); // Remove the node now
@@ -105,12 +119,14 @@ public class Graph {
                 return n;
         return null; // If we don't find one
     }
+
     public void addEdge(String startLabel, String endLabel) {
         Node start = nodeNamed(startLabel);
         Node end = nodeNamed(endLabel);
         if ((start != null) && (end != null))
             addEdge(start, end);
     }
+
     public void draw(GraphicsContext aPen) {
         ArrayList<Edge> edges = getEdges();
         for (Edge e: edges) // Draw the edges first
@@ -130,6 +146,7 @@ public class Graph {
         }
         return null;
     }
+
     public ArrayList<Node> selectedNodes() {
         ArrayList<Node> selected = new ArrayList<Node>();
         for (Node n: nodes)
@@ -142,71 +159,35 @@ public class Graph {
         for (Edge e: getEdges()) {
             Node n1 = e.getStartNode();
             Node n2 = e.getEndNode();
-            double xDiff = n2.getLocation().getX() - n1.getLocation().getX();
-            double yDiff = n2.getLocation().getY() - n1.getLocation().getY();
-            double distance = Math.abs(xDiff*(n1.getLocation().getY() - y) -
-                    (n1.getLocation().getX() - x)*yDiff) /
-                    Math.sqrt(xDiff*xDiff + yDiff*yDiff);
-            if (distance <= 5) {
-                if (Math.abs(xDiff) > Math.abs(yDiff)) {
-                    if (((x < n1.getLocation().getX()) &&
-                            (x > n2.getLocation().getX())) ||
-                            ((x > n1.getLocation().getX()) &&
-                                    (x < n2.getLocation().getX())))
-                        return e;
-                }
-                else
-                if (((y < n1.getLocation().getY()) &&
-                        (y > n2.getLocation().getY())) ||
-                        ((y > n1.getLocation().getY()) &&
-                                (y < n2.getLocation().getY())))
-                    return e;
-            }
-            // arrow left
-            xDiff = e.getLeftArrow().getX() - e.getCenterArrow().getX();
-            yDiff = e.getLeftArrow().getY() - e.getCenterArrow().getY();
-            distance = Math.abs(xDiff*(e.getCenterArrow().getY() - y) -
-                    (e.getCenterArrow().getX() - x)*yDiff) /
-                    Math.sqrt(xDiff*xDiff + yDiff*yDiff);
-            if (distance <= 5) {
-                if (Math.abs(xDiff) > Math.abs(yDiff)) {
-                    if (((x < e.getLeftArrow().getX()) &&
-                            (x > e.getCenterArrow().getX())) ||
-                            ((x > e.getLeftArrow().getX()) &&
-                                    (x < e.getCenterArrow().getX())))
-                        return e;
-                }
-                else
-                if (((y < e.getLeftArrow().getY()) &&
-                        (y > e.getCenterArrow().getY())) ||
-                        ((y > e.getLeftArrow().getY()) &&
-                                (y < e.getCenterArrow().getY())))
-                    return e;
-            }
-            // arrow right
-            xDiff = e.getRightArrow().getX() - e.getCenterArrow().getX();
-            yDiff = e.getRightArrow().getY() - e.getCenterArrow().getY();
-            distance = Math.abs(xDiff*(e.getCenterArrow().getY() - y) -
-                    (e.getCenterArrow().getX() - x)*yDiff) /
-                    Math.sqrt(xDiff*xDiff + yDiff*yDiff);
-            if (distance <= 5) {
-                if (Math.abs(xDiff) > Math.abs(yDiff)) {
-                    if (((x < e.getRightArrow().getX()) &&
-                            (x > e.getCenterArrow().getX())) ||
-                            ((x > e.getRightArrow().getX()) &&
-                                    (x < e.getCenterArrow().getX())))
-                        return e;
-                }
-                else
-                if (((y < e.getRightArrow().getY()) &&
-                        (y > e.getCenterArrow().getY())) ||
-                        ((y > e.getRightArrow().getY()) &&
-                                (y < e.getCenterArrow().getY())))
-                    return e;
+            if(rayPickOnLine(x, y, n1.getLocation().getX(), n1.getLocation().getY(), n2.getLocation().getX(), n2.getLocation().getY()) ||
+                    rayPickOnLine(x, y, e.getLeftArrow().getX(), e.getLeftArrow().getY(), e.getCenterArrow().getX(), e.getCenterArrow().getY()) ||
+                    rayPickOnLine(x, y, e.getRightArrow().getX(), e.getRightArrow().getY(), e.getCenterArrow().getX(), e.getCenterArrow().getY())){
+                return e;
             }
         }
         return null;
     }
+
+    public boolean rayPickOnLine(double x, double y, double x1, double y1, double x2, double y2){
+        double xDiff = x2 - x1;
+        double yDiff = y2 - y1;
+        double distance = Math.abs(xDiff*(y2 - y) -
+                (x2 - x)*yDiff) /
+                Math.sqrt(xDiff*xDiff + yDiff*yDiff);
+        if (distance <= 5) {
+            if (Math.abs(xDiff) > Math.abs(yDiff)) {
+                if (((x < x1) && (x > x2)) || ((x > x1) && (x < x2))) {
+                    return true;
+                }
+            }
+            else if (((y < y1) && (y > y2)) || ((y > y1) && (y < y2))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     public ArrayList<Edge> selectedEdges() {
         ArrayList<Edge> selected = new ArrayList<Edge>();
         for (Edge e: getEdges())
@@ -214,6 +195,7 @@ public class Graph {
                 selected.add(e);
         return selected;
     }
+
     public void saveTo(PrintWriter aFile) {
         aFile.println(label);
         // Output the nodes

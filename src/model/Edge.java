@@ -10,18 +10,56 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class Edge {
+
+    // vars
     private String label;
     private Node startNode, endNode;
     private Point2D leftArrow, rightArrow;
     private Point2D centerArrow;
     private boolean tempEdge;
-
-    public static final int WIDTH = 7;
     private boolean selected;
+
+    // static
+    public static final int WIDTH = 7;
+
+    // get/set/toggle
     public boolean isSelected() { return selected;}
+
     public void setSelected(boolean state) { selected = state;}
+
     public void toggleSelected() { selected = !selected;}
 
+    public String getLabel() { return label; }
+
+    public Node getStartNode() { return startNode; }
+
+    public Node getEndNode() { return endNode; }
+
+    public Point2D getLeftArrow() {return leftArrow;}
+
+    public Point2D getRightArrow() {return rightArrow;}
+
+    public Point2D getCenterArrow() {return centerArrow;}
+
+    public void setLabel(String newLabel) { label = newLabel; }
+
+    public void setStartNode(Node aNode) { startNode = aNode; }
+
+    public void setEndNode(Node aNode) { endNode = aNode; }
+
+    public void setLeftArrow(Point2D leftArrow) {
+        this.leftArrow = leftArrow;
+    }
+
+    public void setRightArrow(Point2D rightArrow) {
+        this.rightArrow = rightArrow;
+    }
+
+    public void setCenterArrow(Point2D centerArrow) {
+        this.centerArrow = centerArrow;
+    }
+
+    // constr
     public Edge(Node start, Node end) { this("", start, end); }
 
     public Edge(String aLabel, Node start, Node end) {
@@ -39,28 +77,7 @@ public class Edge {
         createArrow();
     }
 
-    public String getLabel() { return label; }
-    public Node getStartNode() { return startNode; }
-    public Node getEndNode() { return endNode; }
-    public Point2D getLeftArrow() {return leftArrow;}
-    public Point2D getRightArrow() {return rightArrow;}
-    public Point2D getCenterArrow() {return centerArrow;}
-
-    public void setLabel(String newLabel) { label = newLabel; }
-    public void setStartNode(Node aNode) { startNode = aNode; }
-    public void setEndNode(Node aNode) { endNode = aNode; }
-
-    public void setLeftArrow(Point2D leftArrow) {
-        this.leftArrow = leftArrow;
-    }
-
-    public void setRightArrow(Point2D rightArrow) {
-        this.rightArrow = rightArrow;
-    }
-
-    public void setCenterArrow(Point2D centerArrow) {
-        this.centerArrow = centerArrow;
-    }
+    // methods
 
     public void createArrow() {
         // получить точку
@@ -68,14 +85,10 @@ public class Edge {
         double y = startNode.getLocation().getY() - endNode.getLocation().getY();
         double length = Math.sqrt(x * x + y * y);
         double procents = 0;
-        //if (length > 1.d) {
-            procents = length / 100.d;
-            procents = 15 / procents;
-            procents /= 100;
-        /*} else {
-            procents = length / 100 * 10;
-        }*/
-        if(tempEdge){
+        procents = length / 100.d;
+        procents = 15 / procents;
+        procents /= 100;
+        if (tempEdge) {
             centerArrow = new Point2D(endNode.getLocation().getX(), endNode.getLocation().getY());
         }else {
             centerArrow = new Point2D(endNode.getLocation().getX() + (x * procents),
@@ -135,6 +148,7 @@ public class Edge {
         else
             return startNode;
     }
+
     public void draw(GraphicsContext aPen) {
         // Draw black line from center of startNode to center of endNode
         createArrow();
@@ -204,6 +218,9 @@ public class Edge {
         aFile.println((int)endNode.getLocation().getY());
         aFile.println(selected);
     }
+
+    // static methods
+
     public static Edge loadFrom(BufferedReader aFile) throws IOException {
         Edge anEdge;
         String aLabel = aFile.readLine();

@@ -4,7 +4,6 @@ import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -12,39 +11,76 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 
 public class Node {
+
+    // vars
     private String label;
     private String labelIn;
     private Point2D location;
     private Color colorNode;
+    private ArrayList<Edge> incidentEdges= new ArrayList<Edge>();
+    private boolean selected;
+
+    // static
     public static Color colorDefault = Color.color(0.6, 0.6, 1.0);
     public static int RADIUS = 15;
-    private ArrayList<Edge> incidentEdges= new ArrayList<Edge>();
 
-    private boolean selected;
+    // get/set/toggle
     public boolean isSelected() { return selected; }
+
     public void setSelected(boolean state) { selected = state; }
+
     public void toggleSelected() { selected = !selected; }
 
+    public String getLabel() { return label; }
+
+    public Point2D getLocation() { return location; }
+
+    public void setLabel(String newLabel) { label = newLabel; }
+
+    public void setLocation(Point2D aPoint) { location = aPoint; }
+
+    public void setLocation(double x, double y) { location = new Point2D(x, y); }
+
+    public Color getColorNode() {
+        return colorNode;
+    }
+
+    public void setColorNode(Color colorNode) {
+        this.colorNode = colorNode;
+    }
+
+    public String getLabelIn() {
+        return labelIn;
+    }
+
+    public void setLabelIn(String labelIn) {
+        this.labelIn = labelIn;
+    }
+
+    // constr
     public Node() { this("", new Point2D(0,0)); }
+
     public Node(String aLabel) { this(aLabel, new Point2D(0,0)); }
+
     public Node(Point2D aPoint) { this("", aPoint); }
+
     public Node(double x, double y) { this("", new Point2D(x,y)); }
+
     public Node(String aLabel, Point2D aPoint) {
         label = aLabel;
+        labelIn = "";
         location = aPoint;
         colorNode = colorDefault;
     }
+
     public Node(String aLabel,String inLabel, Point2D aPoint) {
         label = aLabel;
         labelIn = inLabel;
         location = aPoint;
         colorNode = colorDefault;
     }
-    public String getLabel() { return label; }
-    public Point2D getLocation() { return location; }
-    public void setLabel(String newLabel) { label = newLabel; }
-    public void setLocation(Point2D aPoint) { location = aPoint; }
-    public void setLocation(double x, double y) { location = new Point2D(x, y); }
+
+    // methods
     // Nodes look like this: label(12,43)
     public String toString() {
         return(label + "(" + location.getX() + "," + location.getY() + ")");
@@ -53,12 +89,10 @@ public class Node {
     public ArrayList<Edge> incidentEdges() {
         return incidentEdges;
     }
+
     public void addIncidentEdge(Edge e) {
         incidentEdges.add(e);
     }
-
-
-    //incidentEdges = new ArrayList<model.Edge>();
 
     public ArrayList<Node> neighbours() {
         ArrayList<Node> result = new ArrayList<Node>();
@@ -66,6 +100,7 @@ public class Node {
             result.add(e.otherEndFrom(this));
         return result;
     }
+
     public void draw(GraphicsContext aPen) {
         // Draw a blue-filled circle around the center of the node
         if (selected)
@@ -88,33 +123,22 @@ public class Node {
     }
 
     public void saveTo(PrintWriter aFile) {
+        aFile.println(labelIn);
         aFile.println(label);
         aFile.println((int)location.getX());
         aFile.println((int)location.getY());
         aFile.println(selected);
+        aFile.println(colorNode.toString());
     }
+
     public static Node loadFrom(BufferedReader aFile) throws IOException {
         Node aNode = new Node();
+        aNode.setLabelIn(aFile.readLine());
         aNode.setLabel(aFile.readLine());
         aNode.setLocation(Integer.parseInt(aFile.readLine()),
                 Integer.parseInt(aFile.readLine()));
         aNode.setSelected(Boolean.valueOf(aFile.readLine()).booleanValue());
+        aNode.setColorNode(Color.valueOf(aFile.readLine()));
         return aNode;
-    }
-
-    public Color getColorNode() {
-        return colorNode;
-    }
-
-    public void setColorNode(Color colorNode) {
-        this.colorNode = colorNode;
-    }
-
-    public String getLabelIn() {
-        return labelIn;
-    }
-
-    public void setLabelIn(String labelIn) {
-        this.labelIn = labelIn;
     }
 }
